@@ -2,7 +2,7 @@
   <div class="home">
     <h1>3D模型导入导出演示</h1>
     <BaseThreeScene @sceneReady="onSceneReady" />
-    
+
     <div class="instructions">
       <h3>使用说明：</h3>
       <ul>
@@ -11,7 +11,7 @@
         <li>点击"清空模型"按钮可以移除所有导入的模型</li>
         <li>也可以导入JSON配置文件来批量加载模型</li>
       </ul>
-      
+
       <h3>部署说明：</h3>
       <p>将导出的JSON配置文件和模型文件放在public/models目录下即可部署运行</p>
     </div>
@@ -19,19 +19,19 @@
 </template>
 
 <script>
-import BaseThreeScene from '@/components/ThreeScene/BaseThreeScene.vue';
+import BaseThreeScene from "@/components/ThreeScene/BaseThreeScene.vue";
 
 export default {
-  name: 'Home',
+  name: "Home",
   components: {
-    BaseThreeScene
+    BaseThreeScene,
   },
   methods: {
     onSceneReady(sceneManager, modelManager) {
-      console.log('场景已就绪', sceneManager, modelManager);
+      console.log("场景已就绪", sceneManager, modelManager);
       // 可以在这里进行额外的场景设置
-    }
-  }
+    },
+  },
 };
 </script>
 

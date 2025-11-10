@@ -80,7 +80,7 @@ export default {
         color: 0x808080,
         position: { x: 0, y: -2, z: 0 },
       });
-      this.sceneManager.addObject('ground', ground);
+      this.sceneManager.addObject("ground", ground);
 
       // 添加示例立方体
       const cube = ModelFactory.createBox({
@@ -90,7 +90,7 @@ export default {
         color: 0x00ff00,
         position: { x: -2, y: 0, z: 0 },
       });
-      this.sceneManager.addObject('cube', cube);
+      this.sceneManager.addObject("cube", cube);
 
       // 添加示例球体
       const sphere = ModelFactory.createSphere({
@@ -98,7 +98,7 @@ export default {
         color: 0xff0000,
         position: { x: 2, y: 0, z: 0 },
       });
-      this.sceneManager.addObject('sphere', sphere);
+      this.sceneManager.addObject("sphere", sphere);
     },
 
     // 导入模型

@@ -39,14 +39,14 @@ export class SceneManager {
     // 返回当前实例，支持链式调用
     return this;
   }
-  
+
   initScene() {
     // 创建场景
     this.scene = new THREE.Scene();
     // 设置场景背景颜色
     this.scene.background = new THREE.Color(0xf0f0f0);
   }
-  
+
   initCamera() {
     // 创建相机
     this.camera = new THREE.PerspectiveCamera(
@@ -60,7 +60,7 @@ export class SceneManager {
     // 设置相机目标点为场景中心
     this.camera.lookAt(0, 0, 0);
   }
-  
+
   initRenderer() {
     // 创建渲染器
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -76,7 +76,7 @@ export class SceneManager {
     // 将渲染器的 DOM 元素添加到场景容器中
     this.container.appendChild(this.renderer.domElement);
   }
-  
+
   initControls() {
     // 创建轨道控制器
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
@@ -85,7 +85,7 @@ export class SceneManager {
     // 设置轨道控制器阻尼因子
     this.controls.dampingFactor = 0.25;
   }
-  
+
   initLights() {
     // 环境光
     const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
@@ -101,7 +101,7 @@ export class SceneManager {
     // 添加方向光到场景中
     this.scene.add(directionalLight);
   }
-  
+
   initResizeHandler() {
     // 初始化窗口 resize 事件处理
     window.addEventListener("resize", () => this.onWindowResize());
@@ -172,7 +172,7 @@ export class SceneManager {
     //添加动画到动画数组
     this.animations.push(animation);
   }
-  
+
   // 渲染循环
   animate() {
     // 递归调用 animate 方法，实现循环渲染
