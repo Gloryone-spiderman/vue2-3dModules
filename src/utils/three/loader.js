@@ -1,69 +1,119 @@
-import * as THREE from "three";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
+import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader";
+import { MTLLoader } from "three/examples/jsm/loaders/MTLLoader";
 
+// 模型加载器类
 export class ModelLoader {
-  // 模型加载器 设置加载器 支持glTF、FBX、OBJ、MTL格式
+  // 构造函数，初始化模型加载器
   constructor() {
+    // 初始化模型加载器，包含GLTF、FBX、OBJ、MTL四种格式的加载器
     this.loader = {
-      gtlf: new THREE.GLTFLoader(),
-      fbx: new THREE.FBXLoader(),
-      obj: new THREE.OBJLoader(),
-      mtl: new THREE.MTLLoader(),
+      gltf: new GLTFLoader(),
+      fbx: new FBXLoader(),
+      obj: new OBJLoader(),
+      mtl: new MTLLoader(),
     };
   }
-  // 异步加载模型 支持glTF、FBX、OBJ、MTL格式
-  // @param {string} url - 模型文件的URL
-  // @param {string} type - 模型类型，可选值为'gtlf'、'fbx'、'obj'、'mtl'，默认值为'gtlf'
-  // @returns {Promise<THREE.Object3D>} - 加载完成的模型对象
-  async loadModel(url, type = "gtlf") {
+
+  // 异步加载模型
+  async loadModel(url, type = "gltf", options = {}) {
+    // 返回一个Promise，异步加载模型
     return new Promise((resolve, reject) => {
+      // 获取指定类型的加载器
       const loader = this.loader[type];
+      // 如果没有对应的加载器，抛出错误
       if (!loader) {
-        reject(new Error(`不支持的模型类型:${type}`));
+        reject(new Error(`不支持的模型类型: ${type}`));
         return;
       }
+      // 加载模型，处理进度、错误和成功回调
+      const onProgress =
+        options.onProgress ||
+        ((progress) => {
+          // 打印加载进度
+          console.log(
+            `Loading progress: ${(
+              (progress.loaded / progress.total) *
+              100
+            ).toFixed(2)}%`
+          );
+        });
+      // 加载模型，处理错误回调
+      const onError =
+        options.onError ||
+        ((error) => {
+          console.error("加载模型错误:", error);
+        });
+      // 加载模型，处理成功回调
       loader.load(
         url,
         (model) => {
+          this.processModel(model, type, options);
           resolve(model);
         },
-        (progress) => {
-          console.log("Loading progress:", progress);
-        },
-        (error) => {
-          reject(error);
-        }
+        onProgress,
+        onError
       );
     });
   }
-  //材质处理
-  // @param {THREE.Object3D} model - 加载完成的模型对象
-  // @returns {THREE.Object3D} - 处理后的模型对象
-  // 遍历模型中的所有材质，设置材质的side为THREE.DoubleSide
-  // 这是因为OBJLoader加载的模型默认是单面的，而在Three.js中，双面渲染是默认开启的
-  // 所以需要将模型中的所有材质的side设置为THREE.DoubleSide，以确保模型在渲染时能够正确显示
-  applyMaterials(model, materialConfig) {
+
+  // 处理加载的模型
+  processModel(model, type, options = {}) {
+    // 遍历模型并设置阴影
     model.traverse((child) => {
       if (child.isMesh) {
-        if (materialConfig) {
-          child.material = materialConfig;
+        // 开启阴影投射
+        child.castShadow = options.castShadow !== false;
+        // 开启阴影接收
+        child.receiveShadow = options.receiveShadow !== false;
+        // 应用材质配置
+        if (options.material) {
+          // 应用指定材质
+          child.material = options.material;
         }
-        child.castShadow = true;
-        child.receiveShadow = true;
       }
     });
-  }
-  createMaterial(config) {
-    const { type = "standard", color = 0xffffff, ...params } = config;
 
-    switch (type) {
-      case "basic":
-        return new THREE.MeshBasicMaterial({ color, ...params });
-      case "lambert":
-        return new THREE.MeshLambertMaterial({ color, ...params });
-      case "phong":
-        return new THREE.MeshPhongMaterial({ color, ...params });
-      default:
-        return new THREE.MeshStandardMaterial({ color, ...params });
+    // 特定类型的处理
+    if (type === "gltf" && model.scene) {
+      // 处理GLTF模型，返回场景
+      return model.scene;
     }
+    // 处理其他类型模型，返回模型本身
+    return model;
+  }
+
+  // 加载OBJ+MTL组合
+  async loadOBJWithMTL(objUrl, mtlUrl, options = {}) {
+    // 异步加载OBJ+MTL组合模型
+    return new Promise((resolve, reject) => {
+      // 加载MTL材质，处理进度、错误和成功回调
+      this.loader.mtl.load(
+        // 加载MTL材质，处理进度、错误和成功回调
+        mtlUrl,
+        // 加载OBJ模型，处理进度、错误和成功回调
+        (materials) => {
+          materials.preload();
+          // 应用MTL材质到OBJ模型
+          this.loader.obj.setMaterials(materials);
+          // 加载OBJ模型，处理进度、错误和成功回调
+          this.loader.obj.load(
+            // 加载OBJ模型，处理进度、错误和成功回调
+            objUrl,
+            (object) => {
+              const processedModel = this.processModel(object, "obj", options);
+              resolve(processedModel);
+            },
+            options.onProgress,
+            options.onError
+          );
+        },
+        options.onProgress,
+        (error) => {
+          reject(new Error(`加载MTL材质失败: ${error}`));
+        }
+      );
+    });
   }
 }
